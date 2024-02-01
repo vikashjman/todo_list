@@ -2,6 +2,9 @@ const todoValue = document.getElementById("todoText");
 const todoAlert = document.getElementById("Alert");
 const listItems = document.getElementById("list-items");
 const addUpdate = document.getElementById("AddUpdateClick");
+const searchValue = document.getElementById("search-box");
+
+
 
 
 
@@ -9,6 +12,8 @@ const generate_unique_id = () => {
     const id = "id" + Math.random().toString(16).slice(2);
     return id;
 }
+
+
 
 const fetch_from_local_storage = () => {
     const arr = JSON.parse(localStorage.getItem('todolist'));
@@ -20,14 +25,14 @@ const add_to_local_storage = (obj) => {
     const arr = fetch_from_local_storage();
     const updated_arr = JSON.stringify([obj, ...arr])
     localStorage.setItem('todolist', updated_arr);
-    populate_todos();
+    populate_todos(fetch_from_local_storage());
 }
 
 const delete_from_local_storage = (id) => {
     const arr = fetch_from_local_storage();
     const updated_arr = arr.filter((ele) => ele.id !== id)
     localStorage.setItem('todolist', JSON.stringify(updated_arr));
-    populate_todos();
+    populate_todos(fetch_from_local_storage());
 }
 
 const update_in_local_storage = (id) => {
@@ -40,7 +45,7 @@ const update_in_local_storage = (id) => {
         }
     });
     localStorage.setItem('todolist', JSON.stringify(updated_arr));
-    populate_todos();
+    populate_todos(fetch_from_local_storage());
 }
 
 const create_element = (task, id) => {
@@ -72,8 +77,8 @@ const create_element = (task, id) => {
     return li;
 }
 
-const populate_todos = () => {
-    const arr = fetch_from_local_storage();
+const populate_todos = (arr) => {
+    // const arr = fetch_from_local_storage();
     // Populate the todo list container
 
     listItems.textContent = '';
@@ -84,17 +89,18 @@ const populate_todos = () => {
 }
 
 
-const set_alert_message = (str) => {
+const set_alert_message = (str, color = 'green') => {
     todoAlert.textContent = str;
+    todoAlert.style.color = color;
     setTimeout(() => {
         todoAlert.textContent = '';
-    }, 1000);
+    }, 3000);
 }
 
 
 const create_do_item = () => {
     if (todoValue.value === "") {
-        todoAlert.innerText = "Please enter your todo text!";
+        set_alert_message("Please enter your todo text!", 'red')
         todoValue.focus();
     } else {
 
@@ -123,7 +129,7 @@ if (localStorage.getItem('todolist') === null) {
     localStorage.setItem('todolist', JSON.stringify(obj));
     console.log(localStorage.getItem('todolist'));
 }
-populate_todos();
+populate_todos(fetch_from_local_storage());
 
 
 
@@ -145,7 +151,7 @@ function update_todo_item(f) {
 }
 
 
-function update_on_selection_items(id) {
+const update_on_selection_items = (id) => {
     update_in_local_storage(id)
     addUpdate.setAttribute("onclick", "CreateToDoItems()");
     addUpdate.setAttribute("src", "/images/plus.png");
@@ -154,7 +160,7 @@ function update_on_selection_items(id) {
 }
 
 
-function completed_todo_items(e) {
+const completed_todo_items = (e) => {
     if (e.parentElement.querySelector("div").style.textDecoration === "") {
         const img = document.createElement("img");
         img.src = "/images/check-mark.png";
@@ -177,3 +183,21 @@ function completed_todo_items(e) {
         set_alert_message("Todo item Completed Successfully!");
     }
 }
+
+
+
+searchValue.addEventListener("blur", (e) => search_task(e))
+const search_task = (e) => {
+    console.log(searchValue.value)
+    if (searchValue.value === "") {
+        populate_todos(fetch_from_local_storage())
+    } else {
+
+        const arr = fetch_from_local_storage();
+
+        const updated_arr = arr.filter(ele => ele.task.includes(searchValue.value))
+        populate_todos(updated_arr)
+    }
+
+}
+
